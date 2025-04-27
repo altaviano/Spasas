@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Pengumuman Kelulusan</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #f8f9fa;
+      }
+      .logo {
+        width: 120px;
+        height: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container text-center mt-5">
+      <img
+        src="./spasas_logo1-removebg-preview.png"
+        alt="Logo Sekolah"
+        class="logo mb-3"
+      />
+      <h2 class="fw-bold mb-4">Pengumuman Kelulusan</h2>
+
+      <div class="card p-4 shadow-sm mx-auto" style="max-width: 400px">
+        <form id="formKelulusan">
+          <div class="mb-3">
+            <label for="nisn" class="form-label">NISN</label>
+            <input type="text" id="nisn" class="form-control" required />
+          </div>
+          <div class="mb-3">
+            <label for="tanggalLahir" class="form-label">Tanggal Lahir</label>
+            <input
+              type="date"
+              id="tanggalLahir"
+              class="form-control"
+              required
+            />
+          </div>
+          <button type="submit" class="btn btn-primary w-100">
+            Cek Kelulusan
+          </button>
+        </form>
+
+        <div id="hasil" class="mt-4"></div>
+      </div>
+    </div>
+
+    <script>
+      let dataSiswa = [];
+
+      // Membaca file CSV
+      async function loadCSV() {
+        const response = await fetch("data_siswa.csv");
+        const data = await response.text();
+        const rows = data.split("\n").slice(1); // skip header
+
+        rows.forEach((row) => {
+          const cols = row.split(",");
+          if (cols.length >= 5) {
+            dataSiswa.push({
+              no: cols[0].trim(),
+              nisn: cols[1].trim(),
+              nama: cols[2].trim(),
+              tanggal_lahir: cols[3].trim(),
+              status: cols[4].trim(),
+            });
+          }
+        });
+      }
+
+      loadCSV();
+
+      const form = document.getElementById("formKelulusan");
+      const hasilDiv = document.getElementById("hasil");
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const nisnInput = document.getElementById("nisn").value.trim();
+        const tanggalLahirInput = document
+          .getElementById("tanggalLahir")
+          .value.trim();
+
+        const siswa = dataSiswa.find(
+          (item) =>
+            item.nisn === nisnInput && item.tanggal_lahir === tanggalLahirInput
+        );
+
+        if (siswa) {
+          hasilDiv.innerHTML = `
+        <h4 class="fw-bold">${siswa.nama}</h4>
+        <p class="${
+          siswa.status.toLowerCase() === "lulus"
+            ? "text-success"
+            : "text-danger"
+        } fw-semibold">
+          ${
+            siswa.status.toLowerCase() === "lulus"
+              ? "Selamat, Anda Lulus!"
+              : "Mohon Maaf, Anda Belum Lulus."
+          }
+        </p>
+      `;
+        } else {
+          hasilDiv.innerHTML = `<div class="alert alert-danger">Data tidak ditemukan. Periksa kembali NISN dan Tanggal Lahir Anda.</div>`;
+        }
+      });
+    </script>
+  </body>
+</html>
